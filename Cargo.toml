@@ -1,0 +1,37 @@
+[workspace]
+members = [
+    "common",
+    "contracts/wiki-contract",
+    "delegates/wiki-delegate",
+    "ui",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Freenet
+freenet-stdlib = { version = "0.1.30", features = ["contract"] }
+freenet-scaffold = "0.1"
+
+# Cryptography
+ed25519-dalek = { version = "2", features = ["serde", "rand_core"] }
+blake3 = "1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+ciborium = "0.2"
+
+# Diff/patch
+similar = "2"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Testing
+proptest = "1"
+rand = "0.8"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"

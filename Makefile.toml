@@ -1,0 +1,88 @@
+# Freenet Wiki - Build Tasks
+# Run with: cargo make <task>
+
+[config]
+default_to_workspace = false
+
+[tasks.default]
+description = "Build all crates"
+alias = "build"
+
+[tasks.build]
+description = "Build all crates"
+command = "cargo"
+args = ["build", "--workspace"]
+
+[tasks.build-release]
+description = "Build all crates in release mode"
+command = "cargo"
+args = ["build", "--workspace", "--release"]
+
+[tasks.test]
+description = "Run all tests"
+command = "cargo"
+args = ["test", "--workspace"]
+
+[tasks.test-common]
+description = "Run common library tests"
+command = "cargo"
+args = ["test", "--package", "freenet-wiki-common"]
+
+[tasks.clippy]
+description = "Run clippy"
+command = "cargo"
+args = ["clippy", "--workspace", "--all-targets"]
+
+[tasks.fmt]
+description = "Format code"
+command = "cargo"
+args = ["fmt", "--all"]
+
+[tasks.fmt-check]
+description = "Check code formatting"
+command = "cargo"
+args = ["fmt", "--all", "--check"]
+
+[tasks.check]
+description = "Run cargo check"
+command = "cargo"
+args = ["check", "--workspace"]
+
+# Contract build tasks
+[tasks.build-contract]
+description = "Build wiki contract (WASM)"
+script = '''
+cd contracts/wiki-contract
+cargo build --release --target wasm32-unknown-unknown
+'''
+
+[tasks.build-delegate]
+description = "Build wiki delegate (WASM)"
+script = '''
+cd delegates/wiki-delegate
+cargo build --release --target wasm32-unknown-unknown
+'''
+
+# UI build tasks
+[tasks.build-ui]
+description = "Build UI"
+script = '''
+cd ui
+cargo build --release
+'''
+
+# Combined release build
+[tasks.release]
+description = "Build all components for release"
+dependencies = ["build-contract", "build-delegate", "build-ui"]
+
+# Development
+[tasks.dev]
+description = "Run tests and clippy"
+dependencies = ["test", "clippy"]
+
+# Clean
+[tasks.clean]
+description = "Clean build artifacts"
+command = "cargo"
+args = ["clean"]

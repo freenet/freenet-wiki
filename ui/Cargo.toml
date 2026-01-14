@@ -1,0 +1,10 @@
+[package]
+name = "freenet-wiki-ui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+freenet-wiki-common = { path = "../common" }
+dioxus = { version = "0.7", features = ["web"] }
+serde = { workspace = true }
+serde_json = "1"

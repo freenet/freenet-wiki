@@ -1,0 +1,14 @@
+[package]
+name = "wiki-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+freenet-wiki-common = { path = "../../common" }
+freenet-stdlib = { workspace = true, features = ["contract"] }
+freenet-scaffold = { workspace = true }
+serde = { workspace = true }
+ciborium = { workspace = true }

@@ -1,0 +1,17 @@
+[package]
+name = "freenet-wiki-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+freenet-scaffold.workspace = true
+ed25519-dalek.workspace = true
+blake3.workspace = true
+serde.workspace = true
+ciborium.workspace = true
+similar.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+rand.workspace = true
