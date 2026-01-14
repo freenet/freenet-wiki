@@ -78,6 +78,10 @@ Patches use content-addressed operations (targeting lines by hash, not position)
 
 The wiki owner can invite contributors, who can then invite others, creating a chain of trust. All edits must be signed by an authorized contributor.
 
+## Development
+
+This project was created using the [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/dapp-builder) skill, which provides guidance for building decentralized applications on Freenet.
+
 ## License
 
 LGPL-3.0
