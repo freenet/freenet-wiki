@@ -80,7 +80,7 @@ The wiki owner can invite contributors, who can then invite others, creating a c
 
 ## Development
 
-This project was created using the [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/dapp-builder) skill, which provides guidance for building decentralized applications on Freenet.
+This project was created using the [freenet-dapp-builder](https://github.com/freenet/freenet-agent-skills/tree/main/skills/dapp-builder) skill, which provides guidance for building decentralized applications on Freenet.
 
 ## License
 
