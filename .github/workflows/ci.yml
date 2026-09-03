@@ -1,0 +1,120 @@
+name: CI
+
+# This repository had NO workflows at all, so every pull request -- including
+# every Dependabot pull request -- merged with zero checks. That matters more
+# here than in an ordinary crate, because this workspace reaches a contract and
+# a delegate whose COMPILED WASM IS THE ADDRESS they are published under. A
+# cargo workspace shares one Cargo.lock, so a bump pulled in for the UI or for
+# `common/` changes the bytes the contract compiles to, and therefore its
+# address. See the warning at the foot of .github/dependabot.yml.
+#
+# WHAT THIS WORKFLOW IS, AND WHAT IT IS NOT.
+#
+# It is a build-and-test gate: it proves the workspace still compiles (native
+# AND wasm32), still passes its tests, and is still lint-clean after a
+# dependency change. It is NOT a contract-address drift guard.
+#
+# That omission is deliberate. Sibling repos (freenet/delta, freenet/ghostkeys,
+# freenet/atlas, freenet/raven) DO gate on the WASM hash, because each of them
+# has a published address to protect -- a committed wasm, a keys.toml, a
+# legacy_*.toml migration registry, or a pointer record. This repository has
+# none of those: nothing is published and nothing is deployed, so a hash gate
+# would have no baseline to compare against. It could only compare a build
+# against the previous build, which would turn red on every legitimate
+# dependency bump while protecting no user's data -- and would teach reviewers
+# the habit of re-baselining a red address check, which is the exact reflex that
+# must NOT exist once the contract really is published.
+#
+# WHEN THE WIKI CONTRACT IS FIRST PUBLISHED, this workflow is no longer
+# sufficient, and two things have to land with that publish:
+#   1. a rust-toolchain.toml pin, because a different rustc emits different WASM
+#      and so mints a different address (freenet/ghostkeys#9); and
+#   2. a real drift guard plus a migration registry, modelled on
+#      freenet/delta's `migration-check` job.
+# Until then, the honest gate is this one.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Deliberately NO `paths:` filter. A filter would have to name Cargo.lock,
+# Cargo.toml, contracts/, delegates/, common/ and every future shared crate, and
+# the failure mode of such a list is silent: a path nobody thought of skips the
+# gate entirely rather than failing loudly. freenet/ghostkeys hit exactly that
+# (a toolchain-only change slipped past its migration guard). The whole
+# workspace builds in about a minute with a warm cache, so filtering buys very
+# little and risks the one thing this workflow exists to prevent.
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: fmt, clippy, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `with: toolchain:` and no rust-toolchain.toml in this repo, so this
+      # tracks stable. That is the right trade-off *while nothing is published*:
+      # the point of the gate is "does this dependency change still build", and
+      # tracking stable also surfaces rustc breakage early. It stops being the
+      # right trade-off the moment an address depends on the compiler -- see the
+      # header note about pinning at publish time.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo fmt
+        run: cargo fmt --all --check
+
+      # `--locked` throughout: it makes CI build the Cargo.lock as committed. On
+      # a Dependabot PR that is precisely the proposed lockfile, which is what
+      # we want tested. Without it cargo may quietly re-resolve and green a
+      # lockfile nobody reviewed.
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: cargo test
+        run: cargo test --workspace --locked
+
+  wasm:
+    name: contract, delegate and UI build for wasm32
+    runs-on: ubuntu-latest
+    # The load-bearing job. The contract and the delegate are only ever RUN as
+    # wasm32, and the native build in the `check` job above does not prove they
+    # compile for that target -- freenet-stdlib gates real chunks of its API on
+    # the target architecture, so a dependency bump can leave the native build
+    # perfectly green and still break the artifact that actually ships.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Release profile on purpose: it is the profile the published artifact is
+      # built with (opt-level "z" + fat LTO + panic=abort, see the root
+      # Cargo.toml), and LTO is a real source of build failures that a debug
+      # build never reaches.
+      - name: Build contract and delegate WASM
+        run: >
+          cargo build --release --locked
+          --target wasm32-unknown-unknown
+          -p wiki-contract -p wiki-delegate
+
+      # `check` rather than a full build: the UI is a Dioxus web binary, and
+      # type-checking it for wasm32 catches the dependency breakage this gate is
+      # about without paying for a full optimised link.
+      - name: Check UI for wasm32
+        run: cargo check --locked -p freenet-wiki-ui --target wasm32-unknown-unknown
