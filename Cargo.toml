@@ -13,7 +13,7 @@ freenet-stdlib = { version = "0.1.30", features = ["contract"] }
 freenet-scaffold = "0.1"
 
 # Cryptography
-ed25519-dalek = { version = "2", features = ["serde", "rand_core"] }
+ed25519-dalek = { version = "3", features = ["serde", "rand_core"] }
 blake3 = "1"
 
 # Serialization
