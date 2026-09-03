@@ -90,10 +90,13 @@ pub fn render_wiki_links(content: &str) -> String {
         result.push_str(&content[last_end..link.start]);
 
         // Render the link
-        let display = link.display.as_ref().map(|s| s.as_str()).unwrap_or_else(|| {
+        let display = link.display.as_deref().unwrap_or_else(|| {
             // Use the original text between [[ and ]] if no display text
             // (preserving original capitalization)
-            &content[link.start + 2..link.end - 2].split('|').next().unwrap_or("")
+            content[link.start + 2..link.end - 2]
+                .split('|')
+                .next()
+                .unwrap_or("")
         });
 
         result.push_str(&format!(
@@ -178,10 +181,7 @@ mod tests {
         let content = "Check [[docs/api|the API]].";
         let rendered = render_wiki_links(content);
 
-        assert_eq!(
-            rendered,
-            "Check <a href=\"#/docs/api\">the API</a>."
-        );
+        assert_eq!(rendered, "Check <a href=\"#/docs/api\">the API</a>.");
     }
 
     #[test]

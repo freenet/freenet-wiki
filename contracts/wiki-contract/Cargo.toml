@@ -12,3 +12,11 @@ freenet-stdlib = { workspace = true, features = ["contract"] }
 freenet-scaffold = { workspace = true }
 serde = { workspace = true }
 ciborium = { workspace = true }
+
+# freenet-stdlib's `#[contract]` macro expands to a `#[cfg(feature =
+# "freenet-main-contract")]` guard, and the feature is defined in the macro's
+# own crate rather than here, so rustc's check-cfg lint flags it in every build.
+# Declaring the value as expected silences exactly that one cfg while leaving
+# the lint live for genuine typos -- an `allow` on the whole lint would not.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("freenet-main-contract"))'] }

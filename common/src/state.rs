@@ -24,7 +24,7 @@ impl WikiParameters {
 }
 
 /// Top-level wiki state.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Default)]
 pub struct WikiStateV1 {
     /// Wiki configuration (owner-only)
     pub config: WikiConfigV1,
@@ -32,16 +32,6 @@ pub struct WikiStateV1 {
     pub contributors: ContributorsV1,
     /// All wiki pages
     pub pages: WikiPagesV1,
-}
-
-impl Default for WikiStateV1 {
-    fn default() -> Self {
-        Self {
-            config: WikiConfigV1::default(),
-            contributors: ContributorsV1::default(),
-            pages: WikiPagesV1::default(),
-        }
-    }
 }
 
 impl WikiStateV1 {
@@ -194,7 +184,11 @@ impl WikiPagesV1 {
         for (path, page) in &self.pages {
             // Verify page path matches
             if &page.path != path {
-                return Err(format!("Page path mismatch: {} vs {}", page.path.as_str(), path.as_str()));
+                return Err(format!(
+                    "Page path mismatch: {} vs {}",
+                    page.path.as_str(),
+                    path.as_str()
+                ));
             }
 
             // Verify revision signature
@@ -363,9 +357,9 @@ impl WikiStateV1 {
 
                         // Verify revision (borrowing self immutably)
                         let verified_revision = if let Some(rev) = new_revision {
-                            let author_vk = self
-                                .get_contributor_vk(&rev.revision.author, params)
-                                .ok_or_else(|| "Revision author not authorized".to_string())?;
+                            let author_vk =
+                                self.get_contributor_vk(&rev.revision.author, params)
+                                    .ok_or_else(|| "Revision author not authorized".to_string())?;
                             rev.verify(&author_vk)?;
                             Some(rev.clone())
                         } else {

@@ -90,7 +90,10 @@ impl WikiPageV1 {
         ops_with_meta.sort_by_key(|(_, ts, id)| (*ts, *id));
 
         // Extract just the operations
-        let ops: Vec<PatchOp> = ops_with_meta.into_iter().map(|(op, _, _)| op.clone()).collect();
+        let ops: Vec<PatchOp> = ops_with_meta
+            .into_iter()
+            .map(|(op, _, _)| op.clone())
+            .collect();
 
         // Apply to base content
         apply_operations(&self.revision.revision.content, &ops)
@@ -294,7 +297,7 @@ impl WikiPageV1 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::patch_ops::{delete_line, insert_after, replace_line};
+    use crate::patch_ops::{delete_line, insert_after};
     use rand::rngs::OsRng;
 
     fn generate_key() -> SigningKey {
@@ -375,8 +378,10 @@ mod tests {
         let base_content = "line1\nline2\nline3\nline4";
 
         // Create two pages with same base
-        let mut page_ab = WikiPageV1::new(PagePath::normalize("test"), base_content.to_string(), &key);
-        let mut page_ba = WikiPageV1::new(PagePath::normalize("test"), base_content.to_string(), &key);
+        let mut page_ab =
+            WikiPageV1::new(PagePath::normalize("test"), base_content.to_string(), &key);
+        let mut page_ba =
+            WikiPageV1::new(PagePath::normalize("test"), base_content.to_string(), &key);
 
         let author_id = ContributorId::from(key.verifying_key());
 
@@ -418,6 +423,9 @@ mod tests {
         assert_eq!(PagePath::normalize("Home").as_str(), "home");
         assert_eq!(PagePath::normalize("/docs/api/").as_str(), "docs/api");
         assert_eq!(PagePath::normalize("").as_str(), "home");
-        assert_eq!(PagePath::normalize("//double//slash").as_str(), "double/slash");
+        assert_eq!(
+            PagePath::normalize("//double//slash").as_str(),
+            "double/slash"
+        );
     }
 }

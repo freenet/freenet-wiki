@@ -155,7 +155,7 @@ impl ContributorsV1 {
             }
 
             // Verify the invitation chain
-            self.verify_invite(&contributor, owner_vk, &owner_id)?;
+            self.verify_invite(contributor, owner_vk, &owner_id)?;
 
             // Enforce limit
             if self.contributors.len() >= max_contributors {
