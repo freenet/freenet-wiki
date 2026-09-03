@@ -9,7 +9,7 @@ resolver = "2"
 
 [workspace.dependencies]
 # Freenet
-freenet-stdlib = { version = "0.1.30", features = ["contract"] }
+freenet-stdlib = { version = "0.8.5", features = ["contract"] }
 freenet-scaffold = "0.1"
 
 # Cryptography
