@@ -79,7 +79,10 @@ pub fn apply_operations(base_content: &str, operations: &[PatchOp]) -> String {
                 }
             }
 
-            PatchOp::Insert { anchor_hash, lines: new_lines } => {
+            PatchOp::Insert {
+                anchor_hash,
+                lines: new_lines,
+            } => {
                 let insert_pos = match anchor_hash {
                     None => 0, // Insert at beginning
                     Some(hash) => {

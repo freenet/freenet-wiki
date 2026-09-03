@@ -12,7 +12,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub enum WikiDelegateRequest {
     /// Store a signing key for a wiki.
-    StoreKey { wiki_id: [u8; 32], key_bytes: [u8; 32] },
+    StoreKey {
+        wiki_id: [u8; 32],
+        key_bytes: [u8; 32],
+    },
     /// Get the signing key for a wiki.
     GetKey { wiki_id: [u8; 32] },
     /// Check if we have a key for a wiki.
@@ -65,8 +68,8 @@ impl DelegateInterface for WikiDelegate {
     ) -> Result<Vec<OutboundDelegateMsg>, DelegateError> {
         match message {
             InboundDelegateMsg::ApplicationMessage(app_msg) => {
-                let request: WikiDelegateRequest = deserialize(&app_msg.payload)
-                    .map_err(|e| DelegateError::Other(e))?;
+                let request: WikiDelegateRequest =
+                    deserialize(&app_msg.payload).map_err(DelegateError::Other)?;
 
                 match request {
                     WikiDelegateRequest::StoreKey { wiki_id, key_bytes } => {
@@ -76,12 +79,10 @@ impl DelegateInterface for WikiDelegate {
                                 key: secret_id,
                                 value: Some(key_bytes.to_vec()),
                             }),
-                            OutboundDelegateMsg::ApplicationMessage(
-                                ApplicationMessage::new(
-                                    app_msg.app,
-                                    serialize(&WikiDelegateResponse::KeyStored),
-                                )
-                            ),
+                            OutboundDelegateMsg::ApplicationMessage(ApplicationMessage::new(
+                                app_msg.app,
+                                serialize(&WikiDelegateResponse::KeyStored),
+                            )),
                         ])
                     }
 

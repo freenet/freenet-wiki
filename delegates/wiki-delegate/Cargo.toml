@@ -12,3 +12,9 @@ freenet-stdlib = { workspace = true }
 serde = { workspace = true }
 ciborium = { workspace = true }
 ed25519-dalek = { workspace = true }
+
+# See the matching block in contracts/wiki-contract/Cargo.toml: the `#[delegate]`
+# macro expands to a `#[cfg(feature = "freenet-main-delegate")]` guard whose
+# feature lives in the macro's crate, not this one.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("freenet-main-delegate"))'] }
